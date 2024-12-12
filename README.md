@@ -4,7 +4,7 @@
 
 ![License](https://img.shields.io/badge/License-MIT-blue) 
 ![Platform](https://img.shields.io/badge/Platform-Arduino-green) 
-![Modulation](https://img.shields.io/badge/Modulation-OOK-lightgrey)
+![Modulation](https://img.shields.io/badge/Modulation-NRZ-lightgrey)
 
 ---
 
