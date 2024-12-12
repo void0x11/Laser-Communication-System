@@ -1,93 +1,63 @@
-# Laser Communication System
+# **Laser Communication System**
 
-A comprehensive **Laser Communication System** designed to demonstrate the transmission of data wirelessly using laser technology. This project leverages modulation techniques and robust data encoding methods to ensure reliable and secure communication. The system includes both a transmitter and receiver, utilizing On-Off Keying (OOK) modulation.
+> **A comprehensive project demonstrating wireless data transmission using laser technology, designed for secure and efficient communication applications.**
 
-## Table of Contents
-- [Introduction](#introduction)
-- [Features](#features)
-- [System Architecture](#system-architecture)
-- [Hardware Requirements](#hardware-requirements)
-- [Software Requirements](#software-requirements)
-- [Installation and Usage](#installation-and-usage)
-- [Project Highlights](#project-highlights)
-- [Contributing](#contributing)
-- [License](#license)
+![License](https://img.shields.io/badge/License-MIT-blue) 
+![Platform](https://img.shields.io/badge/Platform-Arduino-green) 
+![Modulation](https://img.shields.io/badge/Modulation-OOK-lightgrey)
 
-## Introduction
+---
 
-Laser communication uses light to transmit information over a line-of-sight path, offering an alternative to traditional wired and radio communication systems. This project demonstrates basic principles of laser-based data transmission, showcasing its efficiency, security, and practical implementation challenges.
+## **✨ Features**
+- 🚀 **Data Mapping and Encoding**: Converts text to binary with start and end flags for integrity.
+- 🔦 **OOK Modulation**: Employs On-Off Keying to transmit binary data as laser pulses.
+- 📡 **Real-Time Demodulation**: Reconstructs data from received laser signals.
+- 🛡 **Error Handling**: Validates transmitted frames using flag-based framing.
+- 💡 **Visual Indicators**: Uses LEDs for system state feedback.
 
-## Features
+---
 
-- **Data Mapping and Encoding**: Converts text data to binary format with added start and end flags for transmission integrity.
-- **Modulation Using OOK**: Employs On-Off Keying modulation to transmit binary data as laser pulses.
-- **Real-Time Demodulation**: Processes received signals to reconstruct the original data.
-- **Error Handling**: Ensures valid data frames with flag-based framing.
-- **Visual Indicators**: Uses LEDs to signal system states during data transmission and reception.
+## **📽 Demo**
+> **Coming Soon!**
 
-## System Architecture
+---
 
-The system comprises the following components:
+## **📥 Installation**
 
-1. **Transmitter**: Encodes and modulates input data for transmission using a laser diode.
-2. **Receiver**: Demodulates and decodes the received laser signals back into readable data.
+Clone this repository and set up the hardware and software:
 
-### Block Diagram
-```
-[Data Source] --> [Transmitter (Laser Diode + Driver)] --> [Line-of-Sight Path] --> [Receiver (Photodiode + Amplifier)] --> [Output Device]
+```bash
+git clone https://github.com/void0x11/Laser-Communication-System.git
 ```
 
-## Hardware Requirements
+### **Hardware Setup**
+1. Assemble components based on the schematic in the `docs` folder.
+2. Align transmitter and receiver for line-of-sight communication.
 
-- Laser Diode Module
-- Photodiode Sensor
-- Signal Modulation and Demodulation Circuit
-- LED Indicators
-- Power Supply (e.g., 5V DC)
-- Breadboard or PCB for prototyping
+### **Software Setup**
+1. Flash the code from `LaserCommunication.cpp` and `LaserCommunication.h` to the microcontroller using Arduino IDE.
+2. Configure transmitter and receiver roles using `PointA.ino` and `PointB.ino` sketches.
 
-## Software Requirements
+---
 
-- Arduino IDE (or any compatible microcontroller programming environment)
-- Simulation Tools (e.g., Proteus or LTspice for circuit validation)
+## **📂 Project Structure**
+```bash
+Laser-Communication-System/
+├── LaserCommunication.cpp   # Core implementation
+├── LaserCommunication.h     # Header file
+├── PointA.ino               # Transmitter setup
+├── PointB.ino               # Receiver setup
+├── docs/                    # Schematic and documentation
+├── LICENSE                  # License file
+└── README.md                # Project documentation
+```
 
-## Installation and Usage
+---
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/void0x11/Laser-Communication-System.git
-   ```
-
-2. Assemble the hardware components based on the provided schematic in the `docs` folder.
-
-3. Flash the provided code (`LaserCommunication.cpp` and `LaserCommunication.h`) onto the microcontroller using the Arduino IDE.
-
-4. Align the transmitter and receiver components for a clear line-of-sight path.
-
-5. Use the `PointA.ino` and `PointB.ino` sketches for configuring the transmitter and receiver roles.
-
-6. Test the system by transmitting and receiving sample data, and monitor the Serial output for debugging information.
-
-## Project Highlights
-
-- **Encoding and Decoding**: Implements ASCII-to-binary conversion and vice versa with framing.
-- **OOK Modulation**: Transmits binary data with visual feedback on system state.
-- **Error Handling**: Validates transmitted data using start and end flags.
-- **Practical Challenges**: Overcomes alignment issues and noise interference.
-
-## Contributing
-
-Contributions are welcome! If you have ideas for improving the system, please:
-
-1. Fork the repository.
-2. Create a new branch.
-3. Commit your changes.
-4. Open a pull request with detailed information about your updates.
-
-## License
+## **📜 License**
 
 This project is licensed under the [MIT License](LICENSE). Feel free to use, modify, and distribute the code with proper attribution.
 
 ---
 
-For any questions or feedback, please open an issue on the [GitHub repository](https://github.com/void0x11/Laser-Communication-System/issues).
+For questions or contributions, open an issue on the [GitHub repository](https://github.com/void0x11/Laser-Communication-System/issues).
