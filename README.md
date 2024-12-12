@@ -10,7 +10,7 @@
 
 ## **✨ Features**
 - 🚀 **Data Mapping and Encoding**: Converts text to binary with start and end flags for integrity.
-- 🔦 **OOK Modulation**: Employs On-Off Keying to transmit binary data as laser pulses.
+- 🔦 **Non Zero Return Modulation**: Employs On-Off Keying to transmit binary data as laser pulses.
 - 📡 **Real-Time Demodulation**: Reconstructs data from received laser signals.
 - 🛡 **Error Handling**: Validates transmitted frames using flag-based framing.
 - 💡 **Visual Indicators**: Uses LEDs for system state feedback.
