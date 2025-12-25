@@ -77,10 +77,10 @@ String LaserCommunication::RemoveFlags(String binaryData) {
         uint8_t recvCrc = (uint8_t)strtol(crcStr.c_str(), NULL, 2);
         
         if (calcCrc == recvCrc) {
-            Serial.println(F("[CRC] Verification Passed."));
+            Serial.println(F("CRC Verification: Success"));
             return payload;
         } else {
-            Serial.print(F("[CRC] Verification Failed! Computed: "));
+            Serial.print(F("CRC Verification: Failure (Expected: "));
             Serial.print(calcCrc, HEX);
             Serial.print(F(", Received: "));
             Serial.println(recvCrc, HEX);
@@ -118,7 +118,7 @@ void LaserCommunication::transmit(String binaryData, int laserPin, int bitDurati
 }
 
 void LaserCommunication::sendOOK(String binaryData, int laserPin, int bitDuration, int led) {
-    Serial.println(F("[SYSTEM] Starting OOK Modulation..."));
+    Serial.println(F("OOK Modulation Start"));
     for (size_t i = 0; i < binaryData.length(); i++) {
         char bit = binaryData[i];
         if (bit == ' ' ) continue;
@@ -129,11 +129,11 @@ void LaserCommunication::sendOOK(String binaryData, int laserPin, int bitDuratio
     }
     digitalWrite(laserPin, LOW);
     digitalWrite(led, LOW);
-    Serial.println(F("[SYSTEM] OOK Transmission Complete."));
+    Serial.println(F("OOK Transmission Complete"));
 }
 
 void LaserCommunication::sendManchester(String binaryData, int laserPin, int bitDuration, int led) {
-    Serial.println(F("[SYSTEM] Starting Manchester Encoding..."));
+    Serial.println(F("Manchester Encoding Start"));
     for (size_t i = 0; i < binaryData.length(); i++) {
         char bit = binaryData[i];
         if (bit == ' ' ) continue;
@@ -157,7 +157,7 @@ void LaserCommunication::sendManchester(String binaryData, int laserPin, int bit
     }
     digitalWrite(laserPin, LOW);
     digitalWrite(led, LOW);
-    Serial.println(F("[SYSTEM] Manchester Transmission Complete."));
+    Serial.println(F("Manchester Transmission Complete"));
 }
 
 String LaserCommunication::receiveOOK(int receiverPin, int bitDuration, int silenceThreshold, int led, int threshold) {
@@ -166,9 +166,6 @@ String LaserCommunication::receiveOOK(int receiverPin, int bitDuration, int sile
     bool receiving = false;
 
     while (millis() - lastSignalTime < silenceThreshold) {
-        // Use analogRead if we want to support adaptive, but the pin might be digital-only info
-        // Let's assume the user can pass a threshold or use digitalRead if it's a digital pin.
-        // For simplicity, we'll check if threshold is -1 to use digitalRead.
         int signal;
         if (threshold == -1) {
             signal = digitalRead(receiverPin);
@@ -201,7 +198,7 @@ uint8_t LaserCommunication::calculateCRC8(String binaryData) {
         crc ^= b;
         for (int j = 0; j < 8; j++) {
             if (crc & 0x80) {
-                crc = (crc << 1) ^ 0x07; // Polynomial x^8 + x^2 + x^1 + 1
+                crc = (crc << 1) ^ 0x07; 
             } else {
                 crc <<= 1;
             }
@@ -211,17 +208,18 @@ uint8_t LaserCommunication::calculateCRC8(String binaryData) {
 }
 
 int LaserCommunication::getAdaptiveThreshold(int analogPin) {
-    Serial.println(F("[CALIBRATION] Starting Adaptive Thresholding..."));
+    Serial.println(F("Threshold Calibration Start"));
     long sum = 0;
-    for (int i = 0; i < 50; i++) {
+    const int samples = 50;
+    for (int i = 0; i < samples; i++) {
         sum += analogRead(analogPin);
         delay(10);
     }
-    int ambient = sum / 50;
-    int threshold = ambient + 50; // Add fixed offset (could be dynamic)
-    Serial.print(F("[CALIBRATION] Ambient: "));
-    Serial.print(ambient);
-    Serial.print(F(", Set Threshold: "));
+    int ambient = sum / samples;
+    int threshold = ambient + 50; 
+    Serial.print(F("Ambient Floor: "));
+    Serial.println(ambient);
+    Serial.print(F("Logic Threshold Set: "));
     Serial.println(threshold);
     return threshold;
 }

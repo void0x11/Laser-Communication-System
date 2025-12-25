@@ -1,64 +1,63 @@
-# Technical Reference: Modulation & Signal Processing
+# Technical Reference: Modulation and Signal Processing
 
-This document details the engineering principles and modulation techniques implemented in the Laser Communication System.
+This document provides the theoretical basis and implementation details for the modulation techniques used in this system.
 
 ## 1. Modulation Schemes
 
 ### On-Off Keying (OOK)
-OOK is the simplest form of Amplitude Shift Keying (ASK). It represents digital data as the presence or absence of a carrier wave (in this case, the laser beam).
+OOK is an implementation of Amplitude Shift Keying (ASK) where data is represented by the presence or absence of a carrier wave (laser output).
 
-- **Logic 1**: Laser ON
-- **Logic 2**: Laser OFF
+- **Logic 1**: High state (Laser Active)
+- **Logic 0**: Low state (Laser Inactive)
 
-> [!NOTE]
-> OOK is efficient but susceptible to ambient light noise and lacks self-clocking capabilities.
+Note: While efficient, OOK is susceptible to ambient light interference and requires external clock synchronization for long data streams.
 
 ### Manchester Encoding
-Manchester encoding is a line code in which the encoding of each data bit has at least one transition and occupies the same time. It is self-clocking, meaning a clock signal can be recovered from the encoded data.
+Manchester encoding is a differential line code where each bit transition occurs at the mid-point of the bit period. This ensures the signal is self-clocking and DC-balanced.
 
-- **Logic 1**: High-to-Low transition (at mid-bit)
-- **Logic 0**: Low-to-High transition (at mid-bit)
+- **Logic 1**: High-to-Low transition at bit center.
+- **Logic 0**: Low-to-High transition at bit center.
 
-#### Advantages:
-- **DC Balance**: Ensures the average power is constant, which is better for many receivers.
-- **Synchronization**: The midpoint transition allows the receiver to stay synchronized with the transmitter's clock.
+#### System Advantages
+- **Timing Recovery**: The guaranteed transition at the center of each bit allows the receiver to synchronize its internal clock to the incoming data stream.
+- **Constant Average Power**: DC balance reduces the impact of baseline wander in optical receivers.
 
 ```mermaid
 graph TD
-    A[Data Bit] --> B{Modulation Type}
-    B -- OOK --> C[Laser High/Low]
-    B -- Manchester --> D[Laser Phase Shift]
+    A[Data Stream] --> B{Modulator}
+    B -- OOK --> C[Binary Amplitude]
+    B -- Manchester --> D[Phase Differential]
     D --> E[Mid-bit Transition]
 ```
 
 ## 2. Framing and Data Integrity
 
-The system uses a frame-based approach to ensure data integrity:
+The communication protocol utilizes a byte-oriented framing structure:
 
-| Field | Size | Description |
-|-------|------|-------------|
-| Start Flag | 8 bits | `10101010` (0xAA) |
-| Payload | Variable | ASCII encoded data |
-| CRC-8 | 8 bits | Error detection checksum |
-| End Flag | 8 bits | `01010101` (0x55) |
+| Field | Size | Functional Description |
+|-------|------|------------------------|
+| Preamble | 8 bits | `10101010` (0xAA) |
+| Payload | Variable | Data Payload (ASCII) |
+| Checksum | 8 bits | CRC-8 Error Detection |
+| Postamble | 8 bits | `01010101` (0x55) |
 
 ## 3. Error Detection: CRC-8
 
-To ensure data integrity, the system implements a **Cycle Redundancy Check (CRC-8)**. The transmitter calculates a checksum based on the payload and appends it to the frame. The receiver re-calculates the CRC and compares it; if they don't match, the packet is flagged as corrupted.
+To ensure data integrity, the system implements a Cyclic Redundancy Check (CRC-8). The transmitter computes a checksum derived from the payload which is verified by the receiver.
 
 - **Polynomial**: `x^8 + x^2 + x + 1` (0x07)
-- **Benefit**: Detects up to 100% of single-bit errors and most burst errors.
+- **Coverage**: Provides detection for all single-bit errors and the majority of burst error scenarios.
 
-## 4. Signal Robustness: Adaptive Thresholding
+## 4. Signal Processing: Adaptive Thresholding
 
-In real-world Optical Wireless Communication (OWC), ambient light is a major noise source. The system features an **Adaptive Thresholding** mechanism:
+To maintain reliable communication in varying ambient lighting, the system employs an adaptive thresholding algorithm:
 
-1. **Calibration Phase**: The system samples ambient light levels for 500ms.
-2. **Dynamic Offset**: It sets the `HIGH` threshold logic level relative to the measured ambient floor.
-3. **Benefit**: Allows the system to function in varying lighting conditions without manual tuning.
+1. **Noise Floor Analysis**: The receiver samples ambient light intensity during an initialization phase.
+2. **Dynamic Logic Level**: The decision threshold for logic states is calculated relative to the measured noise floor.
+3. **Environmental Robustness**: This approach minimizes bit error rates (BER) in high-interference environments.
 
-## 5. Timing Constraints
+## 5. Timing Specification
 
-The variable `bitDuration` determines the baud rate.
-- **Default**: 250ms (4 bps)
-- **Optimization**: For higher speeds, the `bitDuration` can be reduced, but requires more precise timing using `micros()` and higher-quality photodiodes.
+Transmission speed is governed by the `bitDuration` parameter.
+- **Default**: 250ms (4 bps).
+- **High-Speed Optimization**: Increasing baud rates requires photodiodes with low capacitance and high-speed analog-to-digital converters (ADC).

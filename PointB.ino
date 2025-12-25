@@ -63,24 +63,24 @@ void loop() {
     
     if (input.equalsIgnoreCase("MODE:OOK")) {
       currentModulation = ModulationType::OOK;
-      Serial.println(F("[CONFIG] Set modulation to OOK"));
+      Serial.println(F("Modulation: OOK Selected"));
       return;
     } else if (input.equalsIgnoreCase("MODE:MAN")) {
       currentModulation = ModulationType::MANCHESTER;
-      Serial.println(F("[CONFIG] Set modulation to Manchester"));
+      Serial.println(F("Modulation: Manchester Selected"));
       return;
     }
 
     if (input.length() > 0) {
-      Serial.print(F("[SEND] Message: "));
+      Serial.print(F("Payload Input: "));
       Serial.println(input);
       
       String frame = laser.TextMapData(input, 1);
-      Serial.print(F("[SEND] Binary Frame: "));
+      Serial.print(F("Encoded Frame: "));
       Serial.println(frame);
       
       laser.transmit(frame, sens_BA1, bitDuration, LedS_BA1, currentModulation);
-      Serial.println(F("[SEND] Transmission complete."));
+      Serial.println(F("Transmission Complete"));
       Serial.println(F("-----------------------------------"));
     }
   }

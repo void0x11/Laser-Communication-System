@@ -1,84 +1,83 @@
-# **Laser Communication System**
+# Optical Wireless Communication System
 
-> **An advanced engineering project demonstrating secure wireless data transmission using Laser-based Optical Wireless Communication (OWC).**
+This project implements a Semiconductor Laser-based Data Transmission System using Optical Wireless Communication (OWC) principles. It is designed for secure, line-of-sight data transfer between microcontroller nodes.
 
-![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge) 
-![Platform](https://img.shields.io/badge/Platform-Arduino-green?style=for-the-badge) 
-![Modulation](https://img.shields.io/badge/Modulation-Manchester%20%7C%20OOK-orange?style=for-the-badge)
-
----
-
-## **🚀 Core Capabilities**
-
-- 🛠 **Dual modulation schemes**: Support for standard On-Off Keying (OOK) and robust, self-clocking Manchester Encoding.
-- 🧪 **Advanced Error Detection**: Integrated **CRC-8 Checksum** for verifiable data integrity.
-- 🌓 **Ambient Light Resistance**: Self-calibrating **Adaptive Thresholding** for robust reception in varying light conditions.
-- 📡 **Synchronized Framing**: Robust data integrity using 0xAA/0x55 start/end flags.
-- ⚡ **Precision Timing**: Optimized bit-duration logic for reliable line-of-sight transmission.
-- 📊 **Serial Control interface**: Real-time modulation switching (OOK vs. Manchester) via serial commands.
+[![License](https://img.shields.io/badge/License-MIT-blue?style=flat-square)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Arduino-green?style=flat-square)](https://www.arduino.cc/)
+[![Modulation](https://img.shields.io/badge/Modulation-Manchester%20%7C%20OOK-orange?style=flat-square)](TECHNICAL_REFERENCE.md)
 
 ---
 
-## **📂 Technical Architecture**
+## Core System Architecture
+
+The system provides the following technical capabilities:
+
+- **Modulation Schemes**: Implementation of standard On-Off Keying (OOK) and self-clocking Manchester Encoding.
+- **Error Detection**: Integrated CRC-8 checksum verification for frame-level data integrity.
+- **Ambient Light Compensation**: Adaptive thresholding mechanism to normalize reception in variable lighting environments.
+- **Synchronized Framing**: Byte-oriented framing protocol (0xAA/0x55) for reliable packet synchronization.
+- **Control Interface**: Real-time parameter configuration via Serial interface.
+
+---
+
+## Technical Architecture
 
 ```mermaid
 graph LR
     subgraph Transmitter
-        T1[Serial Input] --> T2[Binary Encoding]
-        T2 --> T3[Modulator]
-        T3 --> T4[Laser Diode]
+        T1[Binary Encoder] --> T2[Modulator]
+        T2 --> T3[Laser Driver]
     end
     subgraph Receiver
-        R1[Photodiode] --> R2[Threshold Detection]
+        R1[Photo-receiver] --> R2[Signal Processor]
         R2 --> R3[Demodulator]
-        R3 --> R4[Text Decoding]
+        R3 --> R4[Decoder]
     end
-    T4 -- "Optical Link" --> R1
+    T3 -- "Optical Channel" --> R1
 ```
 
-For a deep dive into the signal processing logic, see the [Technical Reference](TECHNICAL_REFERENCE.md).
+For detailed signal processing and modulation theory, refer to the [Technical Reference](TECHNICAL_REFERENCE.md).
 
 ---
 
-## **� Hardware Implementation**
+## Hardware Implementation
 
-### **Pin Mapping**
+### Pin Mapping Specification
 
-| Component | Arduino Pin (Point A) | Arduino Pin (Point B) | Purpose |
-|-----------|-----------------------|-----------------------|---------|
-| Laser Diode | 2, 3 | 10, 9 | Data Transmission |
-| Photoresistor | 7, 8 | 3, 2 | Signal Reception |
-| Status LED | 13, 24 | 13, 30 | TX/RX Indicators |
-| Ground | GND | GND | Common Reference |
+| Component | Pin (Node A - RX) | Pin (Node B - TX) | Functional Description |
+|-----------|------------------|-------------------|------------------------|
+| Laser Diode | 2, 3 | 10, 9 | Optical Output |
+| Photo-sensor | 7, 8 | 3, 2 | Optical Input |
+| Indicator LED | 13, 24 | 13, 30 | Status Telemetry |
+| Power Rail | 5V | 5V | VCC |
 
-### **Electronic Schematic**
-> [!TIP]
-> Ensure the laser is powered by a stable 5V rail. For the receiver, use a voltage divider circuit if using a raw photoresistor to scale the analog/digital signal correctly.
+### Implementation Notes
+- **Power Stability**: Use a dedicated 5V supply for consistent laser output intensity.
+- **Receiver Circuit**: For photoresistor implementations, a voltage divider is required to interface with the ADC for adaptive thresholding.
 
 ---
 
-## **💻 Software Usage**
+## Software Interface
 
-The `LaserCommunication` library is designed for ease of use. Below is a professional usage example:
+The `LaserCommunication` library provides a unified API for optical data handling.
+
+### Example: Transmitter Node
 
 ```cpp
 #include "LaserCommunication.h"
 
-LaserCommunication laser;
+LaserCommunication link;
 
 void setup() {
     Serial.begin(9600);
-    pinMode(LASER_PIN, OUTPUT);
 }
 
 void loop() {
-    String payload = "Hello World";
+    String payload = "OWC_DATA_01";
+    String frame = link.TextMapData(payload, 1);
     
-    // 1. Encode text to framed binary
-    String frame = laser.TextMapData(payload, 1);
-    
-    // 2. Transmit using Manchester Encoding
-    laser.transmit(frame, LASER_PIN, 250, LED_PIN, ModulationType::MANCHESTER);
+    // Transmission using Manchester modulation for clock recovery
+    link.transmit(frame, LASER_PIN, 250, LED_PIN, ModulationType::MANCHESTER);
     
     delay(1000);
 }
@@ -86,24 +85,21 @@ void loop() {
 
 ---
 
-## **⚠️ Troubleshooting**
+## Troubleshooting and Optimization
 
-- **No Signal Detected**: Ensure direct line-of-sight. Ambient light can saturate photoresistors; try using a dark tube or lens to focus the laser on the sensor.
-- **Corrupted Data**: Check the `bitDuration`. If the receiver is too slow (using `delay()` in other parts of the code), reduce the baud rate by increasing `bitDuration`.
-- **Manchester vs OOK**: If you experience high clock drift, switch to **Manchester** mode (`MODE:MAN`) as it provides self-clocking synchronization.
-
----
-
-## **📈 Performance & Roadmap**
-- [x] Manchester Encoding (v1.1)
-- [ ] Adaptive Thresholding for Ambient Light
-- [ ] Error Correction Codes (Hamming/CRC)
-- [ ] Bi-directional Full Duplex Support
+- **Signal Saturation**: High ambient light may saturate the receiver. Use optical baffling or infrared filters to improve signal-to-noise ratio.
+- **Clock Drift**: At high bitrates, standard OOK may lose synchronization. Manchester encoding is recommended for robust timing recovery.
+- **Data Integrity**: If the receiver logs CRC failures, increase the `bitDuration` to account for photodiode rise/fall times.
 
 ---
 
-## **📜 License**
-Distributed under the MIT License. See `LICENSE` for more information.
+## Development Roadmap
+- [x] Manchester Encoding Implementation (v1.1)
+- [x] CRC-8 Checksum Integration (v1.2)
+- [ ] Forward Error Correction (Hamming 7,4)
+- [ ] Bidirectional Full-Duplex Link
 
 ---
-*Developed for research and educational purposes in Optical Wireless Communications.*
+
+## License
+Distributed under the MIT License. See `LICENSE` for details.

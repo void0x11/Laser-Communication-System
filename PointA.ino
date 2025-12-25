@@ -65,12 +65,12 @@ void loop() {
   String receivedFrame = laser.receiveOOK(recv_BA1, bitDuration, silenceThreshold, LedR_BA1, threshold);
 
   if (receivedFrame.length() > 0) {
-    Serial.println(F("\n[RECEIVE] Incoming transmission detected..."));
-    Serial.print(F("[RECEIVE] Raw Frame: "));
+    Serial.println(F("\nReception: Transmission Detected"));
+    Serial.print(F("Frame Binary: "));
     Serial.println(receivedFrame);
 
     String decodedMessage = laser.TextMapData(receivedFrame, 2);
-    Serial.print(F("[RECEIVE] Decoded: "));
+    Serial.print(F("Decoded Message: "));
     Serial.println(decodedMessage);
     Serial.println(F("-----------------------------------"));
   }
