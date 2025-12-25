@@ -54,24 +54,19 @@ void setup() {
 }
 
 void loop() {
-  // Variables to store received data
-  String receivedFrame = "";
-  String decodedMessage = "";
-
-  // Start receiving data using OOK
-  receivedFrame = laser.receiveOOK(recv_BA1, bitDuration, silenceThreshold, LedR_BA1);
+  // Check for incoming data
+  String receivedFrame = laser.receiveOOK(recv_BA1, bitDuration, silenceThreshold, LedR_BA1);
 
   if (receivedFrame.length() > 0) {
-    Serial.print("Raw Received Frame: ");
+    Serial.println(F("\n[RECEIVE] Incoming transmission detected..."));
+    Serial.print(F("[RECEIVE] Raw Frame: "));
     Serial.println(receivedFrame);
 
-    // Decode the received data frame
-    decodedMessage = laser.TextMapData(receivedFrame, 2);
-    Serial.print("Decoded Message: ");
+    String decodedMessage = laser.TextMapData(receivedFrame, 2);
+    Serial.print(F("[RECEIVE] Decoded: "));
     Serial.println(decodedMessage);
-  } else {
-    Serial.println("No data received. Waiting...");
+    Serial.println(F("-----------------------------------"));
   }
 
-  delay(500); // Small delay to prevent continuous polling
+  delay(100); // Responsive loop
 }

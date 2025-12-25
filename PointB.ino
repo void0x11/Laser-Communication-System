@@ -54,29 +54,34 @@ void setup() {
   Serial.println("System ready. Enter a message to send:");
 }
 
+ModulationType currentModulation = ModulationType::MANCHESTER; // Default to Manchester for better demo
+
 void loop() {
-  int receivedSignal1 = digitalRead(recv_AB1);
-  int receivedSignal2 = digitalRead(recv_AB2);
-
   if (Serial.available() > 0) {
-    DataRt = Serial.readStringUntil('\n');  // Read data until newline character
-    DataRt.trim();  // Remove trailing and leading whitespaces or newlines
+    String input = Serial.readStringUntil('\n');
+    input.trim();
     
-    if (DataRt.length() > 0) {
-      Serial.print("Message Sent: ");
-      Serial.println(DataRt);
-      DataFrame = laser.TextMapData(DataRt,1);
-      Serial.print("DataFrame: ");
-      Serial.println(DataFrame);
-      laser.sendOOK(DataFrame, sens_BA1, bitDuration, LedS_BA1);
+    if (input.equalsIgnoreCase("MODE:OOK")) {
+      currentModulation = ModulationType::OOK;
+      Serial.println(F("[CONFIG] Set modulation to OOK"));
+      return;
+    } else if (input.equalsIgnoreCase("MODE:MAN")) {
+      currentModulation = ModulationType::MANCHESTER;
+      Serial.println(F("[CONFIG] Set modulation to Manchester"));
+      return;
     }
 
-    else{
-      Serial.print("Failed, Try Again: ");
-      DataRt = Serial.readStringUntil('\n');  // Read data until newline character
-      DataRt.trim();  // Remove trailing and leading whitespaces or newlines
+    if (input.length() > 0) {
+      Serial.print(F("[SEND] Message: "));
+      Serial.println(input);
+      
+      String frame = laser.TextMapData(input, 1);
+      Serial.print(F("[SEND] Binary Frame: "));
+      Serial.println(frame);
+      
+      laser.transmit(frame, sens_BA1, bitDuration, LedS_BA1, currentModulation);
+      Serial.println(F("[SEND] Transmission complete."));
+      Serial.println(F("-----------------------------------"));
     }
-    }
-
-    
+  }
 }
