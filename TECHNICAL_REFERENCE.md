@@ -39,9 +39,25 @@ The system uses a frame-based approach to ensure data integrity:
 |-------|------|-------------|
 | Start Flag | 8 bits | `10101010` (0xAA) |
 | Payload | Variable | ASCII encoded data |
+| CRC-8 | 8 bits | Error detection checksum |
 | End Flag | 8 bits | `01010101` (0x55) |
 
-## 3. Timing Constraints
+## 3. Error Detection: CRC-8
+
+To ensure data integrity, the system implements a **Cycle Redundancy Check (CRC-8)**. The transmitter calculates a checksum based on the payload and appends it to the frame. The receiver re-calculates the CRC and compares it; if they don't match, the packet is flagged as corrupted.
+
+- **Polynomial**: `x^8 + x^2 + x + 1` (0x07)
+- **Benefit**: Detects up to 100% of single-bit errors and most burst errors.
+
+## 4. Signal Robustness: Adaptive Thresholding
+
+In real-world Optical Wireless Communication (OWC), ambient light is a major noise source. The system features an **Adaptive Thresholding** mechanism:
+
+1. **Calibration Phase**: The system samples ambient light levels for 500ms.
+2. **Dynamic Offset**: It sets the `HIGH` threshold logic level relative to the measured ambient floor.
+3. **Benefit**: Allows the system to function in varying lighting conditions without manual tuning.
+
+## 5. Timing Constraints
 
 The variable `bitDuration` determines the baud rate.
 - **Default**: 250ms (4 bps)

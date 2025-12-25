@@ -11,6 +11,8 @@
 ## **🚀 Core Capabilities**
 
 - 🛠 **Dual modulation schemes**: Support for standard On-Off Keying (OOK) and robust, self-clocking Manchester Encoding.
+- 🧪 **Advanced Error Detection**: Integrated **CRC-8 Checksum** for verifiable data integrity.
+- 🌓 **Ambient Light Resistance**: Self-calibrating **Adaptive Thresholding** for robust reception in varying light conditions.
 - 📡 **Synchronized Framing**: Robust data integrity using 0xAA/0x55 start/end flags.
 - ⚡ **Precision Timing**: Optimized bit-duration logic for reliable line-of-sight transmission.
 - 📊 **Serial Control interface**: Real-time modulation switching (OOK vs. Manchester) via serial commands.

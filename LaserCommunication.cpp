@@ -32,9 +32,21 @@ String LaserCommunication::Text2Binary(String asciiData) {
 }
 
 String LaserCommunication::AddFlags(String binaryData) {
-    String start = "10101010"; // Placeholder for START_FLAG_BYTE
-    String end = "01010101";   // Placeholder for END_FLAG_BYTE
-    return start + " " + binaryData + " " + end;
+    String start = "10101010"; // START_FLAG_BYTE
+    String end = "01010101";   // END_FLAG_BYTE
+    
+    // Calculate CRC-8 for the payload (without spaces)
+    String cleanPayload = binaryData;
+    cleanPayload.replace(" ", "");
+    uint8_t crc = calculateCRC8(cleanPayload);
+    
+    // Convert CRC to 8-bit binary string
+    String crcStr = "";
+    for (int i = 7; i >= 0; i--) {
+        crcStr += (crc & (1 << i)) ? '1' : '0';
+    }
+    
+    return start + " " + binaryData + " " + crcStr + " " + end;
 }
 
 String LaserCommunication::BinaryDataSeparation(String binary) {
@@ -48,8 +60,32 @@ String LaserCommunication::RemoveFlags(String binaryData) {
     int startIndex = binaryData.indexOf(start);
     int endIndex = binaryData.lastIndexOf(end);
     
-    if (startIndex != -1 && endIndex != -1 && endIndex > startIndex + 8) {
-        return binaryData.substring(startIndex + 9, endIndex - 1);
+    if (startIndex != -1 && endIndex != -1 && endIndex > startIndex + 16) {
+        // Extract payload and CRC
+        // Format: [START] [DATA...] [CRC] [END]
+        // Remove spaces for easier indexing if needed, but current format has spaces.
+        // Let's find the last space before 'end' to get CRC
+        int lastSpace = binaryData.lastIndexOf(' ', endIndex - 1);
+        String crcStr = binaryData.substring(lastSpace + 1, endIndex - 1);
+        String payload = binaryData.substring(startIndex + 9, lastSpace);
+        
+        // Verify CRC
+        String cleanPayload = payload;
+        cleanPayload.replace(" ", "");
+        uint8_t calcCrc = calculateCRC8(cleanPayload);
+        
+        uint8_t recvCrc = (uint8_t)strtol(crcStr.c_str(), NULL, 2);
+        
+        if (calcCrc == recvCrc) {
+            Serial.println(F("[CRC] Verification Passed."));
+            return payload;
+        } else {
+            Serial.print(F("[CRC] Verification Failed! Computed: "));
+            Serial.print(calcCrc, HEX);
+            Serial.print(F(", Received: "));
+            Serial.println(recvCrc, HEX);
+            return "Invalid data";
+        }
     }
     return "Invalid data";
 }
@@ -124,13 +160,22 @@ void LaserCommunication::sendManchester(String binaryData, int laserPin, int bit
     Serial.println(F("[SYSTEM] Manchester Transmission Complete."));
 }
 
-String LaserCommunication::receiveOOK(int receiverPin, int bitDuration, int silenceThreshold, int led) {
+String LaserCommunication::receiveOOK(int receiverPin, int bitDuration, int silenceThreshold, int led, int threshold) {
     String receivedData = "";
     unsigned long lastSignalTime = millis();
     bool receiving = false;
 
     while (millis() - lastSignalTime < silenceThreshold) {
-        int signal = digitalRead(receiverPin);
+        // Use analogRead if we want to support adaptive, but the pin might be digital-only info
+        // Let's assume the user can pass a threshold or use digitalRead if it's a digital pin.
+        // For simplicity, we'll check if threshold is -1 to use digitalRead.
+        int signal;
+        if (threshold == -1) {
+            signal = digitalRead(receiverPin);
+        } else {
+            signal = (analogRead(receiverPin) > threshold) ? HIGH : LOW;
+        }
+
         if (signal == HIGH) {
             receiving = true;
             lastSignalTime = millis();
@@ -142,8 +187,41 @@ String LaserCommunication::receiveOOK(int receiverPin, int bitDuration, int sile
     }
 
     if (receiving) {
-        // Simple logic for flag searching (to be improved)
         return receivedData;
     }
     return "";
+}
+
+uint8_t LaserCommunication::calculateCRC8(String binaryData) {
+    uint8_t crc = 0x00;
+    for (size_t i = 0; i < binaryData.length(); i += 8) {
+        String byteStr = binaryData.substring(i, i + 8);
+        uint8_t b = (uint8_t)strtol(byteStr.c_str(), NULL, 2);
+        
+        crc ^= b;
+        for (int j = 0; j < 8; j++) {
+            if (crc & 0x80) {
+                crc = (crc << 1) ^ 0x07; // Polynomial x^8 + x^2 + x^1 + 1
+            } else {
+                crc <<= 1;
+            }
+        }
+    }
+    return crc;
+}
+
+int LaserCommunication::getAdaptiveThreshold(int analogPin) {
+    Serial.println(F("[CALIBRATION] Starting Adaptive Thresholding..."));
+    long sum = 0;
+    for (int i = 0; i < 50; i++) {
+        sum += analogRead(analogPin);
+        delay(10);
+    }
+    int ambient = sum / 50;
+    int threshold = ambient + 50; // Add fixed offset (could be dynamic)
+    Serial.print(F("[CALIBRATION] Ambient: "));
+    Serial.print(ambient);
+    Serial.print(F(", Set Threshold: "));
+    Serial.println(threshold);
+    return threshold;
 }

@@ -24,6 +24,8 @@ LaserCommunication laser;
 // Flicker timing in milliseconds
 #define FLICKER_INTERVAL 50
 
+int threshold = -1; // Default to digital
+
 void setup() {
   // Initialize Serial Monitor
   Serial.begin(9600);
@@ -33,6 +35,7 @@ void setup() {
   pinMode(sens_AB2, OUTPUT);
 
   // Initialize receiver pins
+  // NOTE: For adaptive thresholding, connect receiver to an Analog pin (e.g., A0)
   pinMode(recv_BA1, INPUT);
   pinMode(recv_BA2, INPUT);
 
@@ -50,12 +53,16 @@ void setup() {
   digitalWrite(LedS_AB1, LOW);
   digitalWrite(LedS_AB2, LOW);
 
-  Serial.println("System Initialized");
+  Serial.println(F("System Initialized"));
+  
+  // Optional: Calibrate adaptive threshold if using analog
+  // threshold = laser.getAdaptiveThreshold(A0); 
 }
 
 void loop() {
   // Check for incoming data
-  String receivedFrame = laser.receiveOOK(recv_BA1, bitDuration, silenceThreshold, LedR_BA1);
+  // Pass 'threshold' to use adaptive (if calibrated) or -1 for digital
+  String receivedFrame = laser.receiveOOK(recv_BA1, bitDuration, silenceThreshold, LedR_BA1, threshold);
 
   if (receivedFrame.length() > 0) {
     Serial.println(F("\n[RECEIVE] Incoming transmission detected..."));
